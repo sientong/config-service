@@ -1,5 +1,5 @@
 ### Create new config
-POST http://localhost:3000/configs/unkn/payment
+POST http://localhost:3000/configs/payment_config/payment
 Accept: application/json
 Content-Type: application/json
 
