@@ -1,0 +1,4 @@
+config_database.db
+config_service
+go.sum
+./test/config_database_testing.db

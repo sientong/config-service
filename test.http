@@ -1,0 +1,47 @@
+### Create new config
+POST http://localhost:3000/configs/unkn/payment
+Accept: application/json
+Content-Type: application/json
+
+{
+  "max_limit" : 1000,
+  "enabled" : true
+}
+
+### Update existing config
+PUT http://localhost:3000/configs/payment_config/payment
+Accept: application/json
+Content-Type: application/json
+
+{
+  "max_limit" : 2000,
+  "enabled" : true
+}
+
+### Rollback config
+POST http://localhost:3000/configs/payment_config/payment/rollback
+Accept: application/json
+Content-Type: application/json
+
+{
+  "version": 1
+}
+
+### Get specific version
+GET http://localhost:3000/configs/payment_config/payment
+Accept: application/json
+Content-Type: application/json
+
+{
+  "version": 1
+}
+
+### Get latest version
+GET http://localhost:3000/configs/payment_config/payment
+Accept: application/json
+Content-Type: application/json
+
+### Get all versions
+GET http://localhost:3000/configs/payment_config/payment/versions
+Accept: application/json
+Content-Type: application/json
