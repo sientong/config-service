@@ -132,18 +132,22 @@ Use the included `test.http` file for API testing via VSCode REST Client or simi
 
 ## Ideas for Improvement
 
-1. **Per-Environment Configs**
+1. **Implement Authorization and Authentication**
+
+Implement auth so that only authorized and authenticated user can create or update config.
+
+2. **Per-Environment Configs**
 
 Have separate configs for dev, staging, and prod with fallbacks.
 
-2. **Dynamic Schema Reloading**
+3. **Dynamic Schema Reloading**
 
 Watch the schema directory (e.g., via `fsnotify`) and reload schemas automatically without restarting the service.
 
-3. **Preview Changes**
+4. **Preview Changes**
 
 Allow a “dry-run” update that validates the new config but doesn’t save it yet.
 
-4. **Distributed Cache**
+5. **Distributed Cache**
 
 Use Redis or Memcached to cache configs and schemas across multiple instances.
