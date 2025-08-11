@@ -6,6 +6,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"errors"
 )
 
 type ConfigRepositoryImpl struct{}
@@ -14,7 +15,7 @@ func NewConfigRepository() ConfigRepository {
 	return &ConfigRepositoryImpl{}
 }
 
-func (repository *ConfigRepositoryImpl) GetLatest(ctx context.Context, tx *sql.Tx, config domain.ConfigRecord) domain.ConfigRecord {
+func (repository *ConfigRepositoryImpl) GetLatest(ctx context.Context, tx *sql.Tx, config domain.ConfigRecord) (domain.ConfigRecord, error) {
 	SQL := "SELECT schema, name, version, data, created_at FROM configs WHERE schema = ? AND name = ? ORDER BY version DESC LIMIT 1"
 	rows, err := tx.QueryContext(ctx, SQL, config.Schema, config.Name)
 	helper.PanicIfError(err)
@@ -28,16 +29,18 @@ func (repository *ConfigRepositoryImpl) GetLatest(ctx context.Context, tx *sql.T
 
 		err = json.Unmarshal([]byte(dataStr), &configRecord.Data)
 		helper.PanicIfError(err)
+	} else {
+		return configRecord, errors.New("requested config is not found")
 	}
 
-	return configRecord
+	return configRecord, nil
 }
 
-func (repository *ConfigRepositoryImpl) GetByVersion(ctx context.Context, tx *sql.Tx, config domain.ConfigRecord) domain.ConfigRecord {
+func (repository *ConfigRepositoryImpl) GetByVersion(ctx context.Context, tx *sql.Tx, config domain.ConfigRecord) (domain.ConfigRecord, error) {
 
 	if config.Version == 0 {
-		configRecord := repository.GetLatest(ctx, tx, config)
-		return configRecord
+		configRecord, err := repository.GetLatest(ctx, tx, config)
+		return configRecord, err
 	}
 
 	SQL := "SELECT schema, name, version, data, created_at FROM configs WHERE schema = ? AND name = ? AND version = ? ORDER BY version DESC LIMIT 1"
@@ -53,9 +56,11 @@ func (repository *ConfigRepositoryImpl) GetByVersion(ctx context.Context, tx *sq
 
 		err = json.Unmarshal([]byte(dataStr), &configRecord.Data)
 		helper.PanicIfError(err)
+	} else {
+		return configRecord, errors.New("requested version for specified config is not found")
 	}
 
-	return configRecord
+	return configRecord, nil
 }
 
 func (repository *ConfigRepositoryImpl) ListVersions(ctx context.Context, tx *sql.Tx, config domain.ConfigRecord) []domain.ConfigRecord {

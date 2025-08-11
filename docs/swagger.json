@@ -106,6 +106,12 @@
                         "schema": {
                             "$ref": "#/definitions/web.WebResponse"
                         }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/web.WebResponse"
+                        }
                     }
                 }
             },
@@ -203,6 +209,12 @@
                             "$ref": "#/definitions/web.ConfigResponse"
                         }
                     },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/web.WebResponse"
+                        }
+                    },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
@@ -245,6 +257,12 @@
                             "items": {
                                 "$ref": "#/definitions/web.ConfigResponses"
                             }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/web.WebResponse"
                         }
                     }
                 }

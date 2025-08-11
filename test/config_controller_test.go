@@ -85,7 +85,7 @@ func TestUpdateNonExistPaymentConfigFail(t *testing.T) {
 	secondRequestBody := strings.NewReader(`{"max_limit":5000,"enabled":false}`)
 
 	_, updateHTTP := performRequest(http.MethodPut, "/configs/payment_config/payments", secondRequestBody, true)
-	assert.Equal(t, http.StatusBadRequest, updateHTTP.StatusCode)
+	assert.Equal(t, http.StatusNotFound, updateHTTP.StatusCode)
 
 }
 
@@ -134,7 +134,7 @@ func TestFetchNonexistConfigFails(t *testing.T) {
 
 	fetchRequestBody := strings.NewReader(`{"version":1}`)
 	_, fetchHttp := performRequest(http.MethodGet, "/configs/payment_config/payments", fetchRequestBody, true)
-	assert.Equal(t, http.StatusBadRequest, fetchHttp.StatusCode)
+	assert.Equal(t, http.StatusNotFound, fetchHttp.StatusCode)
 }
 
 func TestFetchAllVersionsPaymentConfigSuccess(t *testing.T) {

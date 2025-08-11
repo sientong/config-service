@@ -25,9 +25,9 @@ func init() {
 	}
 }
 
-func (m *mockConfigRepository) GetLatest(ctx context.Context, tx *sql.Tx, record domain.ConfigRecord) domain.ConfigRecord {
+func (m *mockConfigRepository) GetLatest(ctx context.Context, tx *sql.Tx, record domain.ConfigRecord) (domain.ConfigRecord, error) {
 	args := m.Called(ctx, tx, record)
-	return args.Get(0).(domain.ConfigRecord)
+	return args.Get(0).(domain.ConfigRecord), nil
 }
 
 func (m *mockConfigRepository) CreateNewVersion(ctx context.Context, tx *sql.Tx, record domain.ConfigRecord) domain.ConfigRecord {
@@ -35,9 +35,9 @@ func (m *mockConfigRepository) CreateNewVersion(ctx context.Context, tx *sql.Tx,
 	return args.Get(0).(domain.ConfigRecord)
 }
 
-func (m *mockConfigRepository) GetByVersion(ctx context.Context, tx *sql.Tx, record domain.ConfigRecord) domain.ConfigRecord {
+func (m *mockConfigRepository) GetByVersion(ctx context.Context, tx *sql.Tx, record domain.ConfigRecord) (domain.ConfigRecord, error) {
 	args := m.Called(ctx, tx, record)
-	return args.Get(0).(domain.ConfigRecord)
+	return args.Get(0).(domain.ConfigRecord), nil
 }
 
 func (m *mockConfigRepository) ListVersions(ctx context.Context, tx *sql.Tx, record domain.ConfigRecord) []domain.ConfigRecord {

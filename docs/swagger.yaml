@@ -170,6 +170,10 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/web.WebResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/web.WebResponse'
       summary: Update configuration
       tags:
       - configs
@@ -199,6 +203,10 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/web.ConfigResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/web.WebResponse'
         "500":
           description: Internal Server Error
           schema:
@@ -228,6 +236,10 @@ paths:
             items:
               $ref: '#/definitions/web.ConfigResponses'
             type: array
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/web.WebResponse'
       summary: List configuration versions
       tags:
       - configs

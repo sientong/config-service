@@ -12,7 +12,6 @@ import (
 	"config-service/repository"
 	"config-service/service"
 	"context"
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -34,7 +33,7 @@ func main() {
 		log.Fatalf("Error loading schemas: %v", err)
 	}
 
-	fmt.Println("Loaded schemas:", domain.Schemas)
+	log.Println("Loaded schemas:", domain.Schemas)
 
 	// Setup dependencies
 	db := app.NewDB()

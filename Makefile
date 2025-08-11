@@ -15,7 +15,7 @@ run:
 # Run tests
 tests:
 	@echo "Running tests..."
-	go test ./... -v
+	go test ./test -v
 
 # Build Docker image
 docker-build:

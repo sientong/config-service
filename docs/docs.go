@@ -112,6 +112,12 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/web.WebResponse"
                         }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/web.WebResponse"
+                        }
                     }
                 }
             },
@@ -209,6 +215,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/web.ConfigResponse"
                         }
                     },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/web.WebResponse"
+                        }
+                    },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
@@ -251,6 +263,12 @@ const docTemplate = `{
                             "items": {
                                 "$ref": "#/definitions/web.ConfigResponses"
                             }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/web.WebResponse"
                         }
                     }
                 }

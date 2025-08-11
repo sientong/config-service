@@ -59,6 +59,7 @@ func (c *ConfigControllerImpl) CreateConfig(ctx *gin.Context) {
 // @Param request body web.ConfigUpdateRequest true "Config data"
 // @Success 200 {object} web.ConfigResponse
 // @Failure 400 {object} web.WebResponse
+// @Failure 404 {object} web.WebResponse
 // @Router /configs/{schema}/{name} [put]
 func (c *ConfigControllerImpl) UpdateConfig(ctx *gin.Context) {
 	schema := ctx.Param("schema")
@@ -86,6 +87,7 @@ func (c *ConfigControllerImpl) UpdateConfig(ctx *gin.Context) {
 // @Param request body web.ConfigRollbackRequest true "Config data"
 // @Success 200 {object} web.ConfigResponse
 // @Failure 500 {object} web.WebResponse
+// @Failure 404 {object} web.WebResponse
 // @Router /configs/{schema}/{name}/rollback [post]
 func (c *ConfigControllerImpl) RollbackConfig(ctx *gin.Context) {
 	schema := ctx.Param("schema")
@@ -157,6 +159,7 @@ func (c *ConfigControllerImpl) FetchConfig(ctx *gin.Context) {
 // @Param schema path string true "Schema name"
 // @Param name path string true "Configuration name"
 // @Success 200 {array} web.ConfigResponses
+// @Failure 404 {object} web.WebResponse
 // @Router /configs/{schema}/{name}/versions [get]
 func (c *ConfigControllerImpl) ListVersions(ctx *gin.Context) {
 	schema := ctx.Param("schema")
