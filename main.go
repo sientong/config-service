@@ -8,9 +8,11 @@ package main
 import (
 	"config-service/app"
 	"config-service/controller"
+	"config-service/model/domain"
 	"config-service/repository"
 	"config-service/service"
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -25,13 +27,24 @@ import (
 )
 
 func main() {
+
+	// Load schema
+	err := domain.LoadSchemas("schemas")
+	if err != nil {
+		log.Fatalf("Error loading schemas: %v", err)
+	}
+
+	fmt.Println("Loaded schemas:", domain.Schemas)
+
 	// Setup dependencies
 	db := app.NewDB()
 	validate := validator.New()
 	configRepository := repository.NewConfigRepository()
 	configService := service.NewConfigService(configRepository, db, validate)
 	configController := controller.NewConfigController(configService)
-	router := app.NewRouter(configController)
+	schemaController := controller.NewSchemaController()
+
+	router := app.NewRouter(configController, schemaController)
 
 	server := &http.Server{
 		Addr:    ":3000",

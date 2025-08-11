@@ -249,6 +249,39 @@
                     }
                 }
             }
+        },
+        "/schemas/{name}": {
+            "get": {
+                "description": "Returns a schema from the loaded set",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get JSON Schema by name",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Schema Name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Schema not found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {

@@ -1,55 +1,149 @@
 # Configuration Management Service (Golang)
 
 ## Overview
-A small RESTful configuration management service implemented in Go with SQLite persistence and JSON Schema validation. It supports create, update, rollback, fetch (latest or specific version), and list versions.
 
-Schemas are hardcoded and validated with JSON Schema. Persistence uses SQLite (file `config_database.db`).
+This is a small RESTful configuration management service implemented in Go with:
 
-## Run
+- SQLite persistence for storing configurations and their versions.
+- JSON Schema validation to enforce structure and types of stored configs.
+- Versioning support (create, update, rollback to previous versions).
+- Dynamic schema loading from JSON files in the schemas folder at startup.
 
-### Running in Local Machine
+The service is designed for scenarios where configuration data needs to be version-controlled, validated, and retrieved efficiently.
 
-Requirements: Go 1.20+, `make`.
+## Setup and Running the Application
+
+Prerequisites:
+- Go 1.20+
+- Make
+- Docker (optional for containerized deployment)
+
+Local Development
+
+### Build
 
 ```bash
 make build
+```
+
+### Run locally
+
+```bash
 make run
+```
+
+### Run tests
+
+```bash
 make test
 ```
 
-Or directly:
+Or directly with Go:
 
 ```bash
-go run ./...
+go run .
 ```
 
-### Running as Docker image
+### Running with Docker
 
-Requirements: docker, `make`.
+#### Build the Docker image
 
 ```bash
 make docker-build
+```
+
+#### Run in background
+
+```bash
 make docker-run
+```
+
+#### Stop running container
+```bash
 make docker-stop
 ```
 
-API is available at `http://localhost:3000/swagger/index.html`.
+Once running, the API will be available at:
+http://localhost:3000/swagger/index.html
 
-## Makefile targets
-- `build` - build executable
-- `run` - run service locally
-- `test` - run unit and integration tests
-- `clean` - delete local build files
-- `docker-build` - build docker image
-- `docker-run` - run docker image as background process
-- `docker-stop` - stop running docker image
 
-## Swagger
-See `docs/swagger.yaml` for API contract.
+## API Documentation
+
+*Swagger/OpenAPI*
+
+The API is documented in OpenAPI 3.0 format and served by Swagger UI at runtime.
+
+- Swagger UI: http://localhost:3000/swagger/index.html
+- Raw OpenAPI file: docs/swagger.yaml
+
+Endpoints include:
+
+- POST `/configs/{schema}/{name}` – Create a config
+- PUT `/configs/{schema}/{name}` – Update a config
+- POST `/configs/{schema}/{name}/rollback` – Rollback to previous version
+- GET `/configs/{schema}/{name}` – Fetch latest or specific config version
+- GET `/configs/{schema}/{name}/versions` – List all versions
+- GET `/schemas/{schema}` - Display individual schema
+
+## Schema Explanation
+
+Schemas define the structure, allowed types, and constraints for each configuration type. Schemas are stored as `.json` files under the schemas directory. At service startup, all schema files are loaded into memory and used for validating incoming requests.
+
+- Example: `schemas/payment_config.json`
+
+```json
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+        "max_limit": { "type": "integer" },
+        "enabled": { "type": "boolean" }
+    },
+    "required": ["max_limit", "enabled"],
+    "additionalProperties": false
+}
+```
+
+## Design Decisions and Trade-offs
+
+1. SQLite for Persistence
+- Chosen for simplicity and zero external dependencies.
+- Trade-off: Not ideal for high-concurrency, large-scale workloads.
+	
+2.	JSON Schema Validation
+- Ensures configs follow strict structure before persistence.
+- Trade-off: Requires upfront schema design and may reject valid but unstructured data.
+
+3. Versioning
+- Every change creates a new version for auditability and rollback.
+- Trade-off: Requires more storage and careful version handling logic.
+
+4. Dynamic Schema Loading
+- Allows adding new config types without code changes.
+- Trade-off: Missing or invalid schema files will prevent related config operations.
+
+5. Containerization
+- Uses multi-stage Docker build to avoid runtime library mismatches.
+- Trade-off: Larger image than pure static Go binary if CGO is enabled.
 
 ## Testing API
-See `test.http` for API testing.
 
-## Notes
-- Persistence: SQLite file `config_database.db` created in working directory.
-- Validation: JSON Schema (hardcoded in `schema.go`).
+Use the included `test.http` file for API testing via VSCode REST Client or similar tools.
+
+## Ideas for Improvement
+
+1. **Per-Environment Configs**
+
+Have separate configs for dev, staging, and prod with fallbacks.
+
+2. **Dynamic Schema Reloading**
+
+Watch the schema directory (e.g., via `fsnotify`) and reload schemas automatically without restarting the service.
+
+3. **Preview Changes**
+
+Allow a “dry-run” update that validates the new config but doesn’t save it yet.
+
+4. **Distributed Cache**
+
+Use Redis or Memcached to cache configs and schemas across multiple instances.

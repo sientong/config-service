@@ -41,6 +41,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Copy the built binary and Swagger docs
 COPY --from=builder /app/config-service .
 COPY --from=builder /app/docs ./docs
+COPY --from=builder /app/schemas ./schemas
 
 EXPOSE 3000
 CMD ["./config-service"]

@@ -9,7 +9,7 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-func NewRouter(configController controller.ConfigController) *gin.Engine {
+func NewRouter(configController controller.ConfigController, schemaController controller.SchemaController) *gin.Engine {
 	// Create Gin engine
 	router := gin.Default()
 
@@ -36,6 +36,9 @@ func NewRouter(configController controller.ConfigController) *gin.Engine {
 
 	// Swagger UI
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
+	// Display individual schema
+	router.GET("/schemas/:name", schemaController.GetSchema)
 
 	return router
 }

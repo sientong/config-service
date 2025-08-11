@@ -231,4 +231,26 @@ paths:
       summary: List configuration versions
       tags:
       - configs
+  /schemas/{name}:
+    get:
+      description: Returns a schema from the loaded set
+      parameters:
+      - description: Schema Name
+        in: path
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Schema not found
+          schema:
+            type: string
+      summary: Get JSON Schema by name
 swagger: "2.0"

@@ -26,7 +26,7 @@ docker-build:
 docker-run:
 	make docker-stop
 	@echo "Running Docker container..."
-	docker run --name $(DOCKER_CONTAINER_NAME) --rm -d -p 3000:3000 $(DOCKER_IMAGE)
+	docker run --name $(DOCKER_CONTAINER_NAME) --rm -it -p 3000:3000 $(DOCKER_IMAGE)
 
 # Stop Docker container
 docker-stop:

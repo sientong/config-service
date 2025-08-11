@@ -61,7 +61,7 @@ func (repository *ConfigRepositoryImpl) GetByVersion(ctx context.Context, tx *sq
 func (repository *ConfigRepositoryImpl) ListVersions(ctx context.Context, tx *sql.Tx, config domain.ConfigRecord) []domain.ConfigRecord {
 
 	SQL := "SELECT schema, name, version, data, created_at FROM configs WHERE schema = ? AND name = ? ORDER BY version ASC"
-	rows, err := tx.QueryContext(ctx, SQL, config.Schema, config.Name, config.Version)
+	rows, err := tx.QueryContext(ctx, SQL, config.Schema, config.Name)
 	helper.PanicIfError(err)
 	defer rows.Close()
 

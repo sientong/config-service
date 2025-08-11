@@ -1,3 +1,8 @@
+### Check for payment config schema
+GET http://localhost:3000/schemas/payment_config.json
+Accept: application/json
+Content-Type: application/json
+
 ### Create new config
 POST http://localhost:3000/configs/payment_config/payment
 Accept: application/json

@@ -1,25 +1,39 @@
 package domain
 
-// Hardcoded JSON Schemas for different config types. Add more as needed.
+import (
+	"fmt"
+	"os"
+	"path/filepath"
+)
 
-var Schemas = map[string]string{
-	"payment_config": `{
-        "$schema": "http://json-schema.org/draft-07/schema#",
-        "type": "object",
-        "properties": {
-            "max_limit": { "type": "integer" },
-            "enabled": { "type": "boolean" }
-        },
-        "required": ["max_limit", "enabled"],
-        "additionalProperties": false
-    }`,
+// Schemas holds schema name -> JSON schema string
+var Schemas = map[string]string{}
 
-	"feature_flags": `{
-        "$schema": "http://json-schema.org/draft-07/schema#",
-        "type": "object",
-        "patternProperties": {
-            "^[a-zA-Z0-9_\\-]+$": { "type": "boolean" }
-        },
-        "additionalProperties": false
-    }`,
+// LoadSchemas loads all JSON schema files from a given directory into Schemas map
+func LoadSchemas(dir string) error {
+	files, err := os.ReadDir(dir)
+	if err != nil {
+		return fmt.Errorf("failed to read schema directory: %w", err)
+	}
+
+	for _, file := range files {
+		if file.IsDir() {
+			continue
+		}
+
+		if filepath.Ext(file.Name()) != ".json" {
+			continue
+		}
+
+		content, err := os.ReadFile(filepath.Join(dir, file.Name()))
+		if err != nil {
+			return fmt.Errorf("failed to read schema file %s: %w", file.Name(), err)
+		}
+
+		// Use the file name (without .json) as the schema key
+		key := file.Name()[:len(file.Name())-len(filepath.Ext(file.Name()))]
+		Schemas[key] = string(content)
+	}
+
+	return nil
 }
