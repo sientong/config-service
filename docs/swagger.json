@@ -37,7 +37,6 @@
                         "description": "Config data",
                         "name": "request",
                         "in": "body",
-                        "required": true,
                         "schema": {
                             "$ref": "#/definitions/web.ConfigFetchRequest"
                         }
@@ -270,6 +269,7 @@
             "type": "object",
             "properties": {
                 "version": {
+                    "description": "Version is optional",
                     "type": "integer"
                 }
             }

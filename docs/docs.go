@@ -43,7 +43,6 @@ const docTemplate = `{
                         "description": "Config data",
                         "name": "request",
                         "in": "body",
-                        "required": true,
                         "schema": {
                             "$ref": "#/definitions/web.ConfigFetchRequest"
                         }
@@ -276,6 +275,7 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "version": {
+                    "description": "Version is optional",
                     "type": "integer"
                 }
             }

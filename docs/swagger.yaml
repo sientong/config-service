@@ -12,6 +12,7 @@ definitions:
   web.ConfigFetchRequest:
     properties:
       version:
+        description: Version is optional
         type: integer
     type: object
   web.ConfigResponse:
@@ -86,7 +87,6 @@ paths:
       - description: Config data
         in: body
         name: request
-        required: true
         schema:
           $ref: '#/definitions/web.ConfigFetchRequest'
       produces:

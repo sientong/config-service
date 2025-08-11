@@ -116,7 +116,7 @@ func (c *ConfigControllerImpl) RollbackConfig(ctx *gin.Context) {
 // @Produce json
 // @Param schema path string true "Schema name"
 // @Param name path string true "Configuration name"
-// @Param request body web.ConfigFetchRequest true "Config data"
+// @Param request body web.ConfigFetchRequest false "Config data"
 // @Success 200 {object} web.ConfigResponse
 // @Failure 404 {object} web.WebResponse
 // @Router /configs/{schema}/{name} [get]
