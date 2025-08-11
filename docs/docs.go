@@ -274,11 +274,34 @@ const docTemplate = `{
                 }
             }
         },
+        "/schemas": {
+            "get": {
+                "description": "Returns schema list from loaded set",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "schemas"
+                ],
+                "summary": "List of loaded schemas",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/web.SchemaResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/schemas/{name}": {
             "get": {
                 "description": "Returns a schema from the loaded set",
                 "produces": [
                     "application/json"
+                ],
+                "tags": [
+                    "schemas"
                 ],
                 "summary": "Get JSON Schema by name",
                 "parameters": [
@@ -390,6 +413,20 @@ const docTemplate = `{
                 "data": {
                     "type": "object",
                     "additionalProperties": true
+                }
+            }
+        },
+        "web.SchemaResponse": {
+            "type": "object",
+            "properties": {
+                "directory": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
                 }
             }
         },

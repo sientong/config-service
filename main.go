@@ -28,7 +28,7 @@ import (
 func main() {
 
 	// Load schema
-	err := domain.LoadSchemas("schemas")
+	err := domain.LoadSchemas(domain.SchemaDir)
 	if err != nil {
 		log.Fatalf("Error loading schemas: %v", err)
 	}

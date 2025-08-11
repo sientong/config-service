@@ -1,3 +1,8 @@
+### Get list of schema
+GET http://localhost:3000/schemas
+Accept: application/json
+Content-Type: application/json
+
 ### Check for payment config schema
 GET http://localhost:3000/schemas/payment_config.json
 Accept: application/json

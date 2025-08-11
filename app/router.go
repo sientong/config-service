@@ -37,8 +37,12 @@ func NewRouter(configController controller.ConfigController, schemaController co
 	// Swagger UI
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-	// Display individual schema
-	router.GET("/schemas/:name", schemaController.GetSchema)
+	// Schema routers
+	schemas := router.Group("schemas")
+	{
+		schemas.GET("/", schemaController.ListSchemas)
+		schemas.GET("/:name", schemaController.GetSchema)
+	}
 
 	return router
 }

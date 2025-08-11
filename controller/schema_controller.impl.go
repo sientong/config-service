@@ -1,6 +1,8 @@
 package controller
 
 import (
+	"config-service/model/domain"
+	"config-service/model/web"
 	"fmt"
 	"net/http"
 	"os"
@@ -17,6 +19,7 @@ func NewSchemaController() SchemaController {
 // GetSchema godoc
 // @Summary Get JSON Schema by name
 // @Description Returns a schema from the loaded set
+// @Tags schemas
 // @Produce json
 // @Param name path string true "Schema Name"
 // @Success 200 {object} map[string]interface{}
@@ -36,4 +39,26 @@ func (controller *SchemaControllerImpl) GetSchema(c *gin.Context) {
 
 	// Serve the file contents as JSON/YAML depending on your file type
 	c.Data(http.StatusOK, "application/json", data)
+}
+
+// ListSchemas godoc
+// @Summary List of loaded schemas
+// @Description Returns schema list from loaded set
+// @Tags schemas
+// @Produce json
+// @Success 200 {object} web.SchemaResponse
+// @Router /schemas [get]
+func (controller *SchemaControllerImpl) ListSchemas(c *gin.Context) {
+
+	var schemas []web.SchemaResponse
+	for schema := range domain.Schemas {
+		SchemaResponse := web.SchemaResponse{
+			Name:      schema,
+			Path:      schema + ".json",
+			Directory: domain.SchemaDir + "/" + schema + ".json",
+		}
+		schemas = append(schemas, SchemaResponse)
+	}
+
+	c.JSON(http.StatusOK, schemas)
 }

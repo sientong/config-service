@@ -56,6 +56,15 @@ definitions:
     required:
     - data
     type: object
+  web.SchemaResponse:
+    properties:
+      directory:
+        type: string
+      name:
+        type: string
+      path:
+        type: string
+    type: object
   web.WebResponse:
     properties:
       code:
@@ -243,6 +252,19 @@ paths:
       summary: List configuration versions
       tags:
       - configs
+  /schemas:
+    get:
+      description: Returns schema list from loaded set
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/web.SchemaResponse'
+      summary: List of loaded schemas
+      tags:
+      - schemas
   /schemas/{name}:
     get:
       description: Returns a schema from the loaded set
@@ -265,4 +287,6 @@ paths:
           schema:
             type: string
       summary: Get JSON Schema by name
+      tags:
+      - schemas
 swagger: "2.0"

@@ -6,6 +6,9 @@ import (
 	"path/filepath"
 )
 
+// Directory to store all schemas
+var SchemaDir = "schemas"
+
 // Schemas holds schema name -> JSON schema string
 var Schemas = map[string]string{}
 

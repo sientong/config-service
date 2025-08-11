@@ -83,6 +83,8 @@ Endpoints include:
 - POST `/configs/{schema}/{name}/rollback` – Rollback to previous version
 - GET `/configs/{schema}/{name}` – Fetch latest or specific config version
 - GET `/configs/{schema}/{name}/versions` – List all versions
+
+- GET `/schemas` - List of stored schema
 - GET `/schemas/{schema}` - Display individual schema
 
 ## Schema Explanation
