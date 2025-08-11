@@ -113,6 +113,10 @@ func TestFetchSpecificVersionPaymentConfigSuccess(t *testing.T) {
 	_, createHttp := performRequest(http.MethodPost, "/configs/payment_config/payments", createRequestBody, true)
 	assert.Equal(t, http.StatusCreated, createHttp.StatusCode)
 
+	secondCreateRequestBody := strings.NewReader(`{"max_limit":500,"enabled":true}`)
+	_, secondCreateHttp := performRequest(http.MethodPut, "/configs/payment_config/payments", secondCreateRequestBody, false)
+	assert.Equal(t, http.StatusOK, secondCreateHttp.StatusCode)
+
 	fetchRequestBody := strings.NewReader(`{"version":1}`)
 	fetchResp, fetchHttp := performRequest(http.MethodGet, "/configs/payment_config/payments", fetchRequestBody, false)
 	assert.Equal(t, http.StatusOK, fetchHttp.StatusCode)

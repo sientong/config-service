@@ -18,6 +18,26 @@ Content-Type: application/json
   "enabled" : true
 }
 
+### Update not-existing config
+PUT http://localhost:3000/configs/payment_config/unknown
+Accept: application/json
+Content-Type: application/json
+
+{
+  "max_limit" : 2000,
+  "enabled" : true
+}
+
+### Update unknown schema
+PUT http://localhost:3000/configs/unknown/payment
+Accept: application/json
+Content-Type: application/json
+
+{
+  "max_limit" : 2000,
+  "enabled" : true
+}
+
 ### Rollback config
 POST http://localhost:3000/configs/payment_config/payment/rollback
 Accept: application/json
@@ -27,6 +47,24 @@ Content-Type: application/json
   "version": 1
 }
 
+### Rollback non-existing config
+POST http://localhost:3000/configs/payment_config/unknown/rollback
+Accept: application/json
+Content-Type: application/json
+
+{
+  "version": 1
+}
+
+### Rollback non-existing version
+POST http://localhost:3000/configs/payment_config/payment/rollback
+Accept: application/json
+Content-Type: application/json
+
+{
+  "version": 5
+}
+
 ### Get specific version
 GET http://localhost:3000/configs/payment_config/payment
 Accept: application/json
@@ -34,6 +72,15 @@ Content-Type: application/json
 
 {
   "version": 1
+}
+
+### Get specific non-existing version
+GET http://localhost:3000/configs/payment_config/payment
+Accept: application/json
+Content-Type: application/json
+
+{
+  "version": 10
 }
 
 ### Get latest version

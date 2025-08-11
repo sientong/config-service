@@ -18,7 +18,7 @@ func ToConfigResponse(config domain.ConfigRecord) web.ConfigResponse {
 }
 
 func ToConfigResponses(schema string, name string, configRecords []domain.ConfigRecord) web.ConfigResponses {
-	var configResponses []web.ConfigResponse
+	configResponses := make([]web.ConfigResponse, 0)
 	for _, config := range configRecords {
 		schema = config.Schema
 		name = config.Name

@@ -31,7 +31,7 @@ docker-run:
 # Stop Docker container
 docker-stop:
 	@echo "Stopping Docker container..."
-	docker stop $(DOCKER_CONTAINER_NAME)
+	@docker rm -f $(DOCKER_CONTAINER_NAME) 2>/dev/null || true
 
 # Clean local builds
 clean:

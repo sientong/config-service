@@ -117,16 +117,14 @@ func (service *ConfigServiceImpl) FetchConfig(ctx context.Context, schema, name 
 
 	var fetchData domain.ConfigRecord
 	if *request.Version == 0 {
-		configRecord.Version = *request.Version
-		fetchData := service.ConfigRepository.GetLatest(ctx, tx, configRecord)
-		if fetchData.Version == 0 {
-			helper.PanicIfError(helper.ValidationError{Msg: "no data found"})
-		}
+		fetchData = service.ConfigRepository.GetLatest(ctx, tx, configRecord)
 	} else {
+		configRecord.Version = *request.Version
 		fetchData = service.ConfigRepository.GetByVersion(ctx, tx, configRecord)
-		if fetchData.Version == 0 && fetchData.Name == "" && fetchData.Schema == "" {
-			helper.PanicIfError(helper.ValidationError{Msg: "config name doesn't exist"})
-		}
+	}
+
+	if fetchData.Version == 0 && fetchData.Name == "" && fetchData.Schema == "" {
+		helper.PanicIfError(helper.ValidationError{Msg: "config name or its requested version doesn't exist"})
 	}
 
 	return helper.ToConfigResponse(fetchData)
@@ -155,7 +153,7 @@ func (service *ConfigServiceImpl) RollbackConfig(ctx context.Context, schema, na
 	// Check whether fetched version exist
 	fetchData := service.ConfigRepository.GetByVersion(ctx, tx, configRecord)
 	if fetchData.Version == 0 && fetchData.Name == "" && fetchData.Schema == "" {
-		helper.PanicIfError(helper.ValidationError{Msg: "fetched version doesn't exist"})
+		helper.PanicIfError(helper.ValidationError{Msg: "config or fetched version doesn't exist"})
 	}
 
 	// Get latest version
