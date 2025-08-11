@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	_ "github.com/mattn/go-sqlite3"
-	"gopkg.in/go-playground/assert.v1"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestCreateUnknownConfigFails(t *testing.T) {
@@ -22,26 +22,33 @@ func TestCreatePaymentConfigSuccess(t *testing.T) {
 	requestBody := strings.NewReader(`{"max_limit":1000,"enabled":true}`)
 	response, createHTTP := performRequest(http.MethodPost, "/configs/payment_config/payments", requestBody, true)
 
-	assert.Equal(t, http.StatusOK, createHTTP.StatusCode)
+	assert.Equal(t, http.StatusCreated, createHTTP.StatusCode)
 
-	createdData := response["data"].(map[string]interface{})
+	assert.Equal(t, "payment_config", response["schema"])
+	assert.Equal(t, "payments", response["name"])
 
-	assert.Equal(t, "payment_config", createdData["schema"])
-	assert.Equal(t, "payments", createdData["name"])
-
-	versionFloat := createdData["version"].(float64)
+	versionFloat := response["version"].(float64)
 	assert.Equal(t, 1, int(versionFloat))
 
-	properties := createdData["data"].(map[string]interface{})
-	assert.Equal(t, true, properties["enabled"])
-	maxLimitFloat := properties["max_limit"].(float64)
-	assert.Equal(t, 1000, int(maxLimitFloat))
+	properties := response["data"].(map[string]interface{})
+
+	// Enabled
+	enabledVal, ok := properties["enabled"].(bool)
+	if assert.True(t, ok, "enabled should be a bool") {
+		assert.Equal(t, true, enabledVal)
+	}
+
+	// Max limit
+	maxLimitFloat, ok := properties["max_limit"].(float64)
+	if assert.True(t, ok, "max_limit should be a number") {
+		assert.Equal(t, 1000, int(maxLimitFloat))
+	}
 }
 
 func TestCreatePaymentConfigFails(t *testing.T) {
 
 	requestBody := strings.NewReader(`{"max_limit":1000}`)
-	_, updateHTTP := performRequest(http.MethodPut, "/configs/payment_config/payments", requestBody, true)
+	_, updateHTTP := performRequest(http.MethodPost, "/configs/payment_config/payments", requestBody, true)
 
 	assert.Equal(t, http.StatusBadRequest, updateHTTP.StatusCode)
 }
@@ -52,12 +59,11 @@ func TestUpdatePaymentConfigSuccess(t *testing.T) {
 	requestBody := strings.NewReader(`{"max_limit":1000,"enabled":true}`)
 
 	createResp, createHTTP := performRequest(http.MethodPost, "/configs/payment_config/payments", requestBody, true)
-	assert.Equal(t, http.StatusOK, createHTTP.StatusCode)
+	assert.Equal(t, http.StatusCreated, createHTTP.StatusCode)
 
-	createdData := createResp["data"].(map[string]interface{})
-	assert.Equal(t, "payment_config", createdData["schema"])
-	assert.Equal(t, "payments", createdData["name"])
-	assert.Equal(t, 1, int(createdData["version"].(float64)))
+	assert.Equal(t, "payment_config", createResp["schema"])
+	assert.Equal(t, "payments", createResp["name"])
+	assert.Equal(t, 1, int(createResp["version"].(float64)))
 
 	// 2. Update config
 	secondRequestBody := strings.NewReader(`{"max_limit":5000,"enabled":false}`)
@@ -65,12 +71,11 @@ func TestUpdatePaymentConfigSuccess(t *testing.T) {
 	updateResp, updateHTTP := performRequest(http.MethodPut, "/configs/payment_config/payments", secondRequestBody, false)
 	assert.Equal(t, http.StatusOK, updateHTTP.StatusCode)
 
-	updatedData := updateResp["data"].(map[string]interface{})
-	assert.Equal(t, "payment_config", updatedData["schema"])
-	assert.Equal(t, "payments", updatedData["name"])
-	assert.Equal(t, 2, int(updatedData["version"].(float64)))
+	assert.Equal(t, "payment_config", updateResp["schema"])
+	assert.Equal(t, "payments", updateResp["name"])
+	assert.Equal(t, 2, int(updateResp["version"].(float64)))
 
-	props := updatedData["data"].(map[string]interface{})
+	props := updateResp["data"].(map[string]interface{})
 	assert.Equal(t, false, props["enabled"].(bool))
 	assert.Equal(t, 5000, int(props["max_limit"].(float64)))
 }
@@ -88,17 +93,35 @@ func TestFetchLatestPaymentConfigSuccess(t *testing.T) {
 
 	createRequestBody := strings.NewReader(`{"max_limit":500,"enabled":true}`)
 	_, createHttp := performRequest(http.MethodPost, "/configs/payment_config/payments", createRequestBody, true)
-	assert.Equal(t, http.StatusOK, createHttp.StatusCode)
+	assert.Equal(t, http.StatusCreated, createHttp.StatusCode)
 
 	fetchResp, fetchHttp := performRequest(http.MethodGet, "/configs/payment_config/payments", nil, false)
 	assert.Equal(t, http.StatusOK, fetchHttp.StatusCode)
 
-	fetchData := fetchResp["data"].(map[string]interface{})
-	assert.Equal(t, "payment_config", fetchData["schema"])
-	assert.Equal(t, "payments", fetchData["name"])
-	assert.Equal(t, 1, int(fetchData["version"].(float64)))
+	assert.Equal(t, "payment_config", fetchResp["schema"])
+	assert.Equal(t, "payments", fetchResp["name"])
+	assert.Equal(t, 1, int(fetchResp["version"].(float64)))
 
-	props := fetchData["data"].(map[string]interface{})
+	props := fetchResp["data"].(map[string]interface{})
+	assert.Equal(t, true, props["enabled"].(bool))
+	assert.Equal(t, 500, int(props["max_limit"].(float64)))
+}
+
+func TestFetchSpecificVersionPaymentConfigSuccess(t *testing.T) {
+
+	createRequestBody := strings.NewReader(`{"max_limit":500,"enabled":true}`)
+	_, createHttp := performRequest(http.MethodPost, "/configs/payment_config/payments", createRequestBody, true)
+	assert.Equal(t, http.StatusCreated, createHttp.StatusCode)
+
+	fetchRequestBody := strings.NewReader(`{"version":1}`)
+	fetchResp, fetchHttp := performRequest(http.MethodGet, "/configs/payment_config/payments", fetchRequestBody, false)
+	assert.Equal(t, http.StatusOK, fetchHttp.StatusCode)
+
+	assert.Equal(t, "payment_config", fetchResp["schema"])
+	assert.Equal(t, "payments", fetchResp["name"])
+	assert.Equal(t, 1, int(fetchResp["version"].(float64)))
+
+	props := fetchResp["data"].(map[string]interface{})
 	assert.Equal(t, true, props["enabled"].(bool))
 	assert.Equal(t, 500, int(props["max_limit"].(float64)))
 }
@@ -114,7 +137,7 @@ func TestFetchAllVersionsPaymentConfigSuccess(t *testing.T) {
 
 	createRequestBody := strings.NewReader(`{"max_limit":500,"enabled":true}`)
 	_, createHttp := performRequest(http.MethodPost, "/configs/payment_config/payments", createRequestBody, true)
-	assert.Equal(t, http.StatusOK, createHttp.StatusCode)
+	assert.Equal(t, http.StatusCreated, createHttp.StatusCode)
 
 	secondCreateRequestBody := strings.NewReader(`{"max_limit":1000,"enabled":true}`)
 	_, secondCreateHttp := performRequest(http.MethodPut, "/configs/payment_config/payments", secondCreateRequestBody, false)
@@ -123,11 +146,10 @@ func TestFetchAllVersionsPaymentConfigSuccess(t *testing.T) {
 	fetchResp, fetchHttp := performRequest(http.MethodGet, "/configs/payment_config/payments/versions", nil, false)
 	assert.Equal(t, http.StatusOK, fetchHttp.StatusCode)
 
-	fetchData := fetchResp["data"].(map[string]interface{})
-	assert.Equal(t, "payment_config", fetchData["schema"])
-	assert.Equal(t, "payments", fetchData["name"])
+	assert.Equal(t, "payment_config", fetchResp["schema"])
+	assert.Equal(t, "payments", fetchResp["name"])
 
-	versions := fetchData["ConfigVersions"].([]interface{})
+	versions := fetchResp["configVersions"].([]interface{})
 	assert.Equal(t, 2, len(versions))
 
 	firstVersion := versions[0].(map[string]interface{})
@@ -145,12 +167,11 @@ func TestRollbackPaymentFunctionSuccess(t *testing.T) {
 	requestBody := strings.NewReader(`{"max_limit":1000,"enabled":true}`)
 
 	createResp, createHTTP := performRequest(http.MethodPost, "/configs/payment_config/payments", requestBody, true)
-	assert.Equal(t, http.StatusOK, createHTTP.StatusCode)
+	assert.Equal(t, http.StatusCreated, createHTTP.StatusCode)
 
-	createdData := createResp["data"].(map[string]interface{})
-	assert.Equal(t, "payment_config", createdData["schema"])
-	assert.Equal(t, "payments", createdData["name"])
-	assert.Equal(t, 1, int(createdData["version"].(float64)))
+	assert.Equal(t, "payment_config", createResp["schema"])
+	assert.Equal(t, "payments", createResp["name"])
+	assert.Equal(t, 1, int(createResp["version"].(float64)))
 
 	// 2. Update config
 	secondRequestBody := strings.NewReader(`{"max_limit":5000,"enabled":false}`)
@@ -158,10 +179,9 @@ func TestRollbackPaymentFunctionSuccess(t *testing.T) {
 	updateResp, updateHTTP := performRequest(http.MethodPut, "/configs/payment_config/payments", secondRequestBody, false)
 	assert.Equal(t, http.StatusOK, updateHTTP.StatusCode)
 
-	updatedData := updateResp["data"].(map[string]interface{})
-	assert.Equal(t, "payment_config", updatedData["schema"])
-	assert.Equal(t, "payments", updatedData["name"])
-	assert.Equal(t, 2, int(updatedData["version"].(float64)))
+	assert.Equal(t, "payment_config", updateResp["schema"])
+	assert.Equal(t, "payments", updateResp["name"])
+	assert.Equal(t, 2, int(updateResp["version"].(float64)))
 
 	// 3. Rollback config
 	thirdRequestBody := strings.NewReader(`{"version":1}`)
@@ -169,12 +189,11 @@ func TestRollbackPaymentFunctionSuccess(t *testing.T) {
 	rollbackResp, rollbackHttp := performRequest(http.MethodPost, "/configs/payment_config/payments/rollback", thirdRequestBody, false)
 	assert.Equal(t, http.StatusOK, rollbackHttp.StatusCode)
 
-	rollbackData := rollbackResp["data"].(map[string]interface{})
-	assert.Equal(t, "payment_config", rollbackData["schema"])
-	assert.Equal(t, "payments", rollbackData["name"])
-	assert.Equal(t, 3, int(rollbackData["version"].(float64)))
+	assert.Equal(t, "payment_config", rollbackResp["schema"])
+	assert.Equal(t, "payments", rollbackResp["name"])
+	assert.Equal(t, 3, int(rollbackResp["version"].(float64)))
 
-	props := rollbackData["data"].(map[string]interface{})
-	assert.Equal(t, true, props["enabled"].(bool))
+	props := rollbackResp["data"].(map[string]interface{})
+	assert.True(t, props["enabled"].(bool))
 	assert.Equal(t, 1000, int(props["max_limit"].(float64)))
 }

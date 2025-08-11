@@ -33,7 +33,7 @@ make docker-run
 make docker-stop
 ```
 
-API is available at `http://localhost:3000`.
+API is available at `http://localhost:3000/swagger/index.html`.
 
 ## Makefile targets
 - `build` - build executable
@@ -44,8 +44,8 @@ API is available at `http://localhost:3000`.
 - `docker-run` - run docker image as background process
 - `docker-stop` - stop running docker image
 
-## OpenAPI
-See `openapi.yaml` for API contract.
+## Swagger
+See `docs/swagger.yaml` for API contract.
 
 ## Testing API
 See `test.http` for API testing.

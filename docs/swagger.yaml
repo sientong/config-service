@@ -1,0 +1,234 @@
+basePath: /
+definitions:
+  web.ConfigCreateRequest:
+    properties:
+      data:
+        additionalProperties: true
+        description: The configuration JSON object
+        type: object
+    required:
+    - data
+    type: object
+  web.ConfigFetchRequest:
+    properties:
+      version:
+        type: integer
+    type: object
+  web.ConfigResponse:
+    properties:
+      created_at:
+        type: string
+      data:
+        additionalProperties: true
+        description: raw JSON
+        type: object
+      name:
+        type: string
+      schema:
+        type: string
+      version:
+        type: integer
+    type: object
+  web.ConfigResponses:
+    properties:
+      configVersions:
+        items:
+          $ref: '#/definitions/web.ConfigResponse'
+        type: array
+      name:
+        type: string
+      schema:
+        type: string
+    type: object
+  web.ConfigRollbackRequest:
+    properties:
+      version:
+        type: integer
+    required:
+    - version
+    type: object
+  web.ConfigUpdateRequest:
+    properties:
+      data:
+        additionalProperties: true
+        type: object
+    required:
+    - data
+    type: object
+  web.WebResponse:
+    properties:
+      code:
+        type: integer
+      data: {}
+      status:
+        type: string
+    type: object
+host: localhost:3000
+info:
+  contact: {}
+  description: This is a service for managing configurations with versioning.
+  title: Configuration Management Service
+  version: "1.0"
+paths:
+  /configs/{schema}/{name}:
+    get:
+      parameters:
+      - description: Schema name
+        in: path
+        name: schema
+        required: true
+        type: string
+      - description: Configuration name
+        in: path
+        name: name
+        required: true
+        type: string
+      - description: Config data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/web.ConfigFetchRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/web.ConfigResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/web.WebResponse'
+      summary: Fetch configuration
+      tags:
+      - configs
+    post:
+      consumes:
+      - application/json
+      description: Create configuration with given schema and name
+      parameters:
+      - description: Schema name
+        in: path
+        name: schema
+        required: true
+        type: string
+      - description: Configuration name
+        in: path
+        name: name
+        required: true
+        type: string
+      - description: Config data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/web.ConfigCreateRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/web.ConfigResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/web.WebResponse'
+      summary: Create a new configuration
+      tags:
+      - configs
+    put:
+      consumes:
+      - application/json
+      description: Update configuration with given schema and name
+      parameters:
+      - description: Schema name
+        in: path
+        name: schema
+        required: true
+        type: string
+      - description: Configuration name
+        in: path
+        name: name
+        required: true
+        type: string
+      - description: Config data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/web.ConfigUpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/web.ConfigResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/web.WebResponse'
+      summary: Update configuration
+      tags:
+      - configs
+  /configs/{schema}/{name}/rollback:
+    post:
+      parameters:
+      - description: Schema name
+        in: path
+        name: schema
+        required: true
+        type: string
+      - description: Configuration name
+        in: path
+        name: name
+        required: true
+        type: string
+      - description: Config data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/web.ConfigRollbackRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/web.ConfigResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/web.WebResponse'
+      summary: Rollback configuration to previous version
+      tags:
+      - configs
+  /configs/{schema}/{name}/versions:
+    get:
+      parameters:
+      - description: Schema name
+        in: path
+        name: schema
+        required: true
+        type: string
+      - description: Configuration name
+        in: path
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/web.ConfigResponses'
+            type: array
+      summary: List configuration versions
+      tags:
+      - configs
+swagger: "2.0"

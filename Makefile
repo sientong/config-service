@@ -13,7 +13,7 @@ run:
 	go run main.go
 
 # Run tests
-test:
+tests:
 	@echo "Running tests..."
 	go test ./... -v
 

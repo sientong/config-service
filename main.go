@@ -1,9 +1,13 @@
+// @title Configuration Management Service
+// @version 1.0
+// @description This is a service for managing configurations with versioning.
+// @host localhost:3000
+// @BasePath /
 package main
 
 import (
 	"config-service/app"
 	"config-service/controller"
-	"config-service/middleware"
 	"config-service/repository"
 	"config-service/service"
 	"context"
@@ -13,6 +17,8 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+
+	_ "config-service/docs"
 
 	"github.com/go-playground/validator"
 	_ "github.com/mattn/go-sqlite3"
@@ -29,7 +35,7 @@ func main() {
 
 	server := &http.Server{
 		Addr:    ":3000",
-		Handler: middleware.RequestLogger(router),
+		Handler: router,
 	}
 
 	// Run server in a goroutine so it won't block

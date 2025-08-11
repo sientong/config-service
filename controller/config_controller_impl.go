@@ -6,140 +6,163 @@ import (
 	"config-service/service"
 	"net/http"
 
-	"github.com/julienschmidt/httprouter"
+	"github.com/gin-gonic/gin"
 )
 
 type ConfigControllerImpl struct {
-	ConfigService service.ConfigService
+	configService service.ConfigService
 }
 
 func NewConfigController(configService service.ConfigService) ConfigController {
 	return &ConfigControllerImpl{
-		ConfigService: configService,
+		configService: configService,
 	}
 }
 
-func (controller *ConfigControllerImpl) CreateConfig(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
-	schema := params.ByName("schema")
-	name := params.ByName("name")
+// CreateConfig godoc
+// @Summary Create a new configuration
+// @Description Create configuration with given schema and name
+// @Tags configs
+// @Accept json
+// @Produce json
+// @Param schema path string true "Schema name"
+// @Param name path string true "Configuration name"
+// @Param request body web.ConfigCreateRequest true "Config data"
+// @Success 201 {object} web.ConfigResponse
+// @Failure 400 {object} web.WebResponse
+// @Router /configs/{schema}/{name} [post]
+func (c *ConfigControllerImpl) CreateConfig(ctx *gin.Context) {
+	schema := ctx.Param("schema")
+	name := ctx.Param("name")
 
 	var rawData map[string]interface{}
-	helper.ReadFromRequestBody(request, &rawData)
-	configCreateRequest := web.ConfigCreateRequest{
-		Schema: schema,
-		Name:   name,
-		Data:   rawData,
+	err := ctx.ShouldBindJSON(&rawData)
+	helper.PanicIfError(err)
+
+	req := web.ConfigCreateRequest{
+		Data: rawData,
 	}
 
-	configResponse := controller.ConfigService.CreateConfig(request.Context(), configCreateRequest)
-	webResponse := web.WebResponse{
-		Code:   200,
-		Status: "OK",
-		Data:   configResponse,
-	}
+	result := c.configService.CreateConfig(ctx.Request.Context(), schema, name, req)
 
-	helper.WriteToResponseBody(writer, webResponse)
+	ctx.JSON(http.StatusCreated, result)
 }
 
-func (controller *ConfigControllerImpl) UpdateConfig(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
-	schema := params.ByName("schema")
-	name := params.ByName("name")
+// UpdateConfig godoc
+// @Summary Update configuration
+// @Description Update configuration with given schema and name
+// @Tags configs
+// @Accept json
+// @Produce json
+// @Param schema path string true "Schema name"
+// @Param name path string true "Configuration name"
+// @Param request body web.ConfigUpdateRequest true "Config data"
+// @Success 200 {object} web.ConfigResponse
+// @Failure 400 {object} web.WebResponse
+// @Router /configs/{schema}/{name} [put]
+func (c *ConfigControllerImpl) UpdateConfig(ctx *gin.Context) {
+	schema := ctx.Param("schema")
+	name := ctx.Param("name")
 
 	var rawData map[string]interface{}
-	helper.ReadFromRequestBody(request, &rawData)
-	configUpdateRequest := web.ConfigUpdateRequest{
-		Schema: schema,
-		Name:   name,
-		Data:   rawData,
+	err := ctx.ShouldBindJSON(&rawData)
+	helper.PanicIfError(err)
+
+	req := web.ConfigUpdateRequest{
+		Data: rawData,
 	}
 
-	configResponse := controller.ConfigService.UpdateConfig(request.Context(), configUpdateRequest)
-	webResponse := web.WebResponse{
-		Code:   200,
-		Status: "OK",
-		Data:   configResponse,
-	}
+	result := c.configService.UpdateConfig(ctx.Request.Context(), schema, name, req)
 
-	helper.WriteToResponseBody(writer, webResponse)
+	ctx.JSON(http.StatusOK, result)
 }
 
-func (controller *ConfigControllerImpl) RollbackConfig(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
-	schema := params.ByName("schema")
-	name := params.ByName("name")
+// RollbackConfig godoc
+// @Summary Rollback configuration to previous version
+// @Tags configs
+// @Produce json
+// @Param schema path string true "Schema name"
+// @Param name path string true "Configuration name"
+// @Param request body web.ConfigRollbackRequest true "Config data"
+// @Success 200 {object} web.ConfigResponse
+// @Failure 500 {object} web.WebResponse
+// @Router /configs/{schema}/{name}/rollback [post]
+func (c *ConfigControllerImpl) RollbackConfig(ctx *gin.Context) {
+	schema := ctx.Param("schema")
+	name := ctx.Param("name")
 
 	var rawData map[string]interface{}
 	var version int
-	helper.ReadFromRequestBody(request, &rawData)
+	err := ctx.ShouldBindJSON(&rawData)
+	helper.PanicIfError(err)
 	if v, ok := rawData["version"].(float64); ok {
 		version = int(v)
 	} else {
 		helper.PanicIfError(helper.ValidationError{Msg: "missing version"})
 	}
 
-	configUpdateRequest := web.ConfigRollbackRequest{
-		Schema:  schema,
-		Name:    name,
+	req := web.ConfigRollbackRequest{
 		Version: version,
 	}
 
-	configResponse := controller.ConfigService.RollbackConfig(request.Context(), configUpdateRequest)
-	webResponse := web.WebResponse{
-		Code:   200,
-		Status: "OK",
-		Data:   configResponse,
-	}
+	result := c.configService.RollbackConfig(ctx.Request.Context(), schema, name, req)
 
-	helper.WriteToResponseBody(writer, webResponse)
+	ctx.JSON(http.StatusOK, result)
 }
 
-func (controller *ConfigControllerImpl) FetchConfig(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
-	schema := params.ByName("schema")
-	name := params.ByName("name")
+// FetchConfig godoc
+// @Summary Fetch configuration
+// @Tags configs
+// @Produce json
+// @Param schema path string true "Schema name"
+// @Param name path string true "Configuration name"
+// @Param request body web.ConfigFetchRequest true "Config data"
+// @Success 200 {object} web.ConfigResponse
+// @Failure 404 {object} web.WebResponse
+// @Router /configs/{schema}/{name} [get]
+func (c *ConfigControllerImpl) FetchConfig(ctx *gin.Context) {
+	schema := ctx.Param("schema")
+	name := ctx.Param("name")
 
 	var version int
-	if request.GetBody != nil {
-		var rawData map[string]interface{}
-		helper.ReadFromRequestBody(request, &rawData)
-		if v, ok := rawData["version"].(float64); ok {
-			version = int(v)
+
+	// Check if request has a body
+	if ctx.Request.ContentLength > 0 {
+		var req web.ConfigFetchRequest
+		err := ctx.ShouldBindJSON(&req)
+		helper.PanicIfError(err)
+
+		if req.Version != nil {
+			version = *req.Version // user sent a value
 		} else {
-			version = 0
+			version = 0 // user didn’t send version
 		}
 	} else {
 		version = 0
 	}
 
-	ConfigFetchRequest := web.ConfigFetchRequest{
-		Schema:  schema,
-		Name:    name,
-		Version: version,
+	req := web.ConfigFetchRequest{
+		Version: &version,
 	}
 
-	configResponse := controller.ConfigService.FetchConfig(request.Context(), ConfigFetchRequest)
-	webResponse := web.WebResponse{
-		Code:   200,
-		Status: "OK",
-		Data:   configResponse,
-	}
+	result := c.configService.FetchConfig(ctx.Request.Context(), schema, name, req)
 
-	helper.WriteToResponseBody(writer, webResponse)
+	ctx.JSON(http.StatusOK, result)
 }
 
-func (controller *ConfigControllerImpl) ListVersions(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
-	schema := params.ByName("schema")
-	name := params.ByName("name")
+// ListVersions godoc
+// @Summary List configuration versions
+// @Tags configs
+// @Produce json
+// @Param schema path string true "Schema name"
+// @Param name path string true "Configuration name"
+// @Success 200 {array} web.ConfigResponses
+// @Router /configs/{schema}/{name}/versions [get]
+func (c *ConfigControllerImpl) ListVersions(ctx *gin.Context) {
+	schema := ctx.Param("schema")
+	name := ctx.Param("name")
 
-	configListVersionsRequest := web.ConfigListVersionsRequest{
-		Schema: schema,
-		Name:   name,
-	}
+	result := c.configService.ListVersions(ctx.Request.Context(), schema, name)
 
-	configResponse := controller.ConfigService.ListVersions(request.Context(), configListVersionsRequest)
-	webResponse := web.WebResponse{
-		Code:   200,
-		Status: "OK",
-		Data:   configResponse,
-	}
-
-	helper.WriteToResponseBody(writer, webResponse)
+	ctx.JSON(http.StatusOK, result)
 }

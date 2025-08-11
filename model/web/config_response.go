@@ -11,7 +11,7 @@ type ConfigResponse struct {
 }
 
 type ConfigResponses struct {
-	Schema         string `json:"schema"`
-	Name           string `json:"name"`
-	ConfigVersions []ConfigResponse
+	Schema         string           `json:"schema"`
+	Name           string           `json:"name"`
+	ConfigVersions []ConfigResponse `json:"configVersions"`
 }

@@ -25,13 +25,13 @@ func NewConfigService(configRepository repository.ConfigRepository, DB *sql.DB, 
 	}
 }
 
-func (service *ConfigServiceImpl) CreateConfig(ctx context.Context, request web.ConfigCreateRequest) web.ConfigResponse {
+func (service *ConfigServiceImpl) CreateConfig(ctx context.Context, schema, name string, request web.ConfigCreateRequest) web.ConfigResponse {
 	// Validate incoming request payload
 	err := service.Validate.Struct(request)
 	helper.PanicIfError(err)
 
 	// Validate against schema
-	helper.ValidateAgainstSchema(request.Schema, request.Data)
+	helper.ValidateAgainstSchema(schema, request.Data)
 
 	// Start transaction
 	tx, err := service.DB.Begin()
@@ -40,14 +40,14 @@ func (service *ConfigServiceImpl) CreateConfig(ctx context.Context, request web.
 
 	// Create domain model
 	configRecord := domain.ConfigRecord{
-		Schema: request.Schema,
-		Name:   request.Name,
+		Schema: schema,
+		Name:   name,
 		Data:   request.Data, // assuming Data is a map or json.RawMessage
 	}
 
 	// Check whether config name exist
 	latest := service.ConfigRepository.GetLatest(ctx, tx, configRecord)
-	if latest.Schema == request.Schema && latest.Name == request.Name {
+	if latest.Schema == schema && latest.Name == name && latest.Version > 0 {
 		helper.PanicIfError(helper.ValidationError{Msg: "config name already exist"})
 	}
 
@@ -61,13 +61,13 @@ func (service *ConfigServiceImpl) CreateConfig(ctx context.Context, request web.
 	return helper.ToConfigResponse(configRecord)
 }
 
-func (service *ConfigServiceImpl) UpdateConfig(ctx context.Context, request web.ConfigUpdateRequest) web.ConfigResponse {
+func (service *ConfigServiceImpl) UpdateConfig(ctx context.Context, schema, name string, request web.ConfigUpdateRequest) web.ConfigResponse {
 	// Validate incoming request payload
 	err := service.Validate.Struct(request)
 	helper.PanicIfError(err)
 
 	// Validate against schema
-	helper.ValidateAgainstSchema(request.Schema, request.Data)
+	helper.ValidateAgainstSchema(schema, request.Data)
 
 	// Start transaction
 	tx, err := service.DB.Begin()
@@ -76,8 +76,8 @@ func (service *ConfigServiceImpl) UpdateConfig(ctx context.Context, request web.
 
 	// Create domain model
 	configRecord := domain.ConfigRecord{
-		Schema: request.Schema,
-		Name:   request.Name,
+		Schema: schema,
+		Name:   name,
 		Data:   request.Data, // assuming Data is a map or json.RawMessage
 	}
 
@@ -96,13 +96,13 @@ func (service *ConfigServiceImpl) UpdateConfig(ctx context.Context, request web.
 	return helper.ToConfigResponse(configRecord)
 }
 
-func (service *ConfigServiceImpl) FetchConfig(ctx context.Context, request web.ConfigFetchRequest) web.ConfigResponse {
+func (service *ConfigServiceImpl) FetchConfig(ctx context.Context, schema, name string, request web.ConfigFetchRequest) web.ConfigResponse {
 	// Validate incoming request payload
 	err := service.Validate.Struct(request)
 	helper.PanicIfError(err)
 
 	// Validate schema existence
-	helper.ValidateSchemaExistence(request.Schema)
+	helper.ValidateSchemaExistence(schema)
 
 	// Start transaction
 	tx, err := service.DB.Begin()
@@ -111,13 +111,13 @@ func (service *ConfigServiceImpl) FetchConfig(ctx context.Context, request web.C
 
 	// Create domain model
 	configRecord := domain.ConfigRecord{
-		Schema: request.Schema,
-		Name:   request.Name,
+		Schema: schema,
+		Name:   name,
 	}
 
 	var fetchData domain.ConfigRecord
-	if request.Version > 0 {
-		configRecord.Version = request.Version
+	if *request.Version == 0 {
+		configRecord.Version = *request.Version
 		fetchData := service.ConfigRepository.GetLatest(ctx, tx, configRecord)
 		if fetchData.Version == 0 {
 			helper.PanicIfError(helper.ValidationError{Msg: "no data found"})
@@ -132,13 +132,13 @@ func (service *ConfigServiceImpl) FetchConfig(ctx context.Context, request web.C
 	return helper.ToConfigResponse(fetchData)
 }
 
-func (service *ConfigServiceImpl) RollbackConfig(ctx context.Context, request web.ConfigRollbackRequest) web.ConfigResponse {
+func (service *ConfigServiceImpl) RollbackConfig(ctx context.Context, schema, name string, request web.ConfigRollbackRequest) web.ConfigResponse {
 	// Validate incoming request payload
 	err := service.Validate.Struct(request)
 	helper.PanicIfError(err)
 
 	// Validate schema existence
-	helper.ValidateSchemaExistence(request.Schema)
+	helper.ValidateSchemaExistence(schema)
 
 	// Start transaction
 	tx, err := service.DB.Begin()
@@ -147,8 +147,8 @@ func (service *ConfigServiceImpl) RollbackConfig(ctx context.Context, request we
 
 	// Create domain model
 	configRecord := domain.ConfigRecord{
-		Schema:  request.Schema,
-		Name:    request.Name,
+		Schema:  schema,
+		Name:    name,
 		Version: request.Version, // assuming Data is a map or json.RawMessage
 	}
 
@@ -171,14 +171,10 @@ func (service *ConfigServiceImpl) RollbackConfig(ctx context.Context, request we
 	return helper.ToConfigResponse(rollbackData)
 }
 
-func (service *ConfigServiceImpl) ListVersions(ctx context.Context, request web.ConfigListVersionsRequest) web.ConfigResponses {
-
-	// Validate incoming request payload
-	err := service.Validate.Struct(request)
-	helper.PanicIfError(err)
+func (service *ConfigServiceImpl) ListVersions(ctx context.Context, schema, name string) web.ConfigResponses {
 
 	// Validate schema existence
-	helper.ValidateSchemaExistence(request.Schema)
+	helper.ValidateSchemaExistence(schema)
 
 	// Start transaction
 	tx, err := service.DB.Begin()
@@ -187,11 +183,11 @@ func (service *ConfigServiceImpl) ListVersions(ctx context.Context, request web.
 
 	// Create domain model
 	configRecord := domain.ConfigRecord{
-		Schema: request.Schema,
-		Name:   request.Name,
+		Schema: schema,
+		Name:   name,
 	}
 
 	configRecords := service.ConfigRepository.ListVersions(ctx, tx, configRecord)
 
-	return helper.ToConfigResponses(configRecords)
+	return helper.ToConfigResponses(schema, name, configRecords)
 }
